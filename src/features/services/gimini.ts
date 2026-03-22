@@ -1,4 +1,4 @@
-const GEMINI_API_KEY = 'AIzaSyDuQQWjZhBf5GlXWTaYrZjKcxnvatTQMY8';
+const GEMINI_API_KEY = '';
 
 /**
  * FIXED 2026 ENDPOINT:
