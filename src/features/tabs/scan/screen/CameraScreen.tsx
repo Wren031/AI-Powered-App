@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { RefreshCcw, X, Zap } from 'lucide-react-native';
 import React, { useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Animated, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { analyzeSkinWithGemini } from '../../services/gimini';
+import { analyzeSkinWithGemini } from '../../../services/gimini';
 
 const { width, height } = Dimensions.get('window');
 

@@ -16,19 +16,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../hooks/useAuth';
 
-// Professional tip: Move theme constants to a separate file later
-const COLORS = {
-  primary: '#007AFF',
-  background: '#FFFFFF',
-  surface: '#F5F5F5',
-  border: '#E8E8E8',
-  textPrimary: '#1A1A1A',
-  textSecondary: '#666666',
-  error: '#FF3B30',
-  white: '#FFFFFF',
-  googleBlue: '#4285F4',
-  facebookBlue: '#1877F2',
-};
+// Consistent Skincare Palette
+const SAGE = '#8FA08E';
+const SAND = '#FCFAF7';
+const DEEP_SAGE = '#3A4D39';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -36,39 +27,22 @@ export default function LoginScreen() {
 
   const [form, setForm] = useState({ email: '', password: '' });
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const [socialLoading, setSocialLoading] = useState<string | null>(null);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const updateForm = (key: string, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleLogin = async () => {
-    const { email, password } = form;
-    if (!email.trim() || !password.trim()) {
-      Alert.alert('Required Fields', 'Please enter your email and password.');
+    if (!form.email.trim() || !form.password.trim()) {
+      Alert.alert('Welcome Back', 'Please enter your details to continue your routine.');
       return;
     }
-
     try {
-      const success = await login({ email: email.trim(), password });
-      if (success) {
-        router.replace('/home');
-      }
+      const success = await login({ email: form.email.trim(), password: form.password });
+      if (success) router.replace('/home');
     } catch (error) {
-      Alert.alert('Login Failed', 'Invalid credentials. Please try again.');
-    }
-  };
-
-  const handleSocialSignIn = async (provider: 'google' | 'facebook') => {
-    setSocialLoading(provider);
-    try {
-      if (provider === 'google') {
-        await signInWithGoogle();
-      } else {
-        Alert.alert('Coming Soon', 'Facebook integration is in progress.');
-      }
-    } finally {
-      setSocialLoading(null);
+      Alert.alert('Error', 'We couldn’t find your profile. Please check your credentials.');
     }
   };
 
@@ -80,111 +54,92 @@ export default function LoginScreen() {
       >
         <ScrollView 
           contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
+          {/* Brand Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>Welcome Back</Text>
-            <Text style={styles.subtitle}>Sign in to your account</Text>
+            <View style={styles.logoMark}>
+              <Ionicons name="leaf-outline" size={32} color="#FFF" />
+            </View>
+            <Text style={styles.title}>Glow Again</Text>
+            <Text style={styles.subtitle}>Sign in to your personalized oasis</Text>
           </View>
 
-          <View style={styles.form}>
-            <TextInput
-              placeholder="Email address"
-              placeholderTextColor="#999"
-              style={styles.input}
-              value={form.email}
-              onChangeText={(text) => updateForm('email', text)}
-              autoCapitalize="none"
-              autoComplete="email"
-              keyboardType="email-address"
-              editable={!loading}
-            />
-
-            <View style={styles.passwordContainer}>
+          <View style={styles.formCard}>
+            {/* Email Input */}
+            <Text style={styles.inputLabel}>Email Address</Text>
+            <View style={[styles.inputGroup, focusedField === 'email' && styles.inputFocused]}>
+              <Ionicons name="mail-outline" size={20} color={focusedField === 'email' ? SAGE : '#94A3B8'} />
               <TextInput
-                placeholder="Password"
-                placeholderTextColor="#999"
-                secureTextEntry={!isPasswordVisible}
-                style={styles.passwordInput}
-                value={form.password}
-                onChangeText={(text) => updateForm('password', text)}
+                placeholder="yourname@glow.com"
+                placeholderTextColor="#94A3B8"
+                style={styles.input}
+                value={form.email}
+                onChangeText={(v) => updateForm('email', v)}
+                onFocus={() => setFocusedField('email')}
+                onBlur={() => setFocusedField(null)}
+                autoCapitalize="none"
                 editable={!loading}
               />
-              <TouchableOpacity
-                onPress={() => setIsPasswordVisible(!isPasswordVisible)}
-                style={styles.eyeIcon}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              >
-                <Ionicons
-                  name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
-                  size={20}
-                  color={COLORS.textSecondary}
-                />
+            </View>
+
+            {/* Password Input */}
+            <Text style={styles.inputLabel}>Password</Text>
+            <View style={[styles.inputGroup, focusedField === 'password' && styles.inputFocused]}>
+              <Ionicons name="lock-closed-outline" size={20} color={focusedField === 'password' ? SAGE : '#94A3B8'} />
+              <TextInput
+                placeholder="••••••••"
+                placeholderTextColor="#94A3B8"
+                secureTextEntry={!isPasswordVisible}
+                style={styles.input}
+                value={form.password}
+                onChangeText={(v) => updateForm('password', v)}
+                onFocus={() => setFocusedField('password')}
+                onBlur={() => setFocusedField(null)}
+                editable={!loading}
+              />
+              <TouchableOpacity onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
+                <Ionicons name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'} size={20} color="#94A3B8" />
               </TouchableOpacity>
             </View>
 
-            <TouchableOpacity
-              // onPress={() => router.push('/forgot-password')}
-              style={styles.forgotPasswordContainer}
-              disabled={loading}
-            >
-              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+            <TouchableOpacity style={styles.forgotBtn}>
+              <Text style={styles.forgotText}>Forgot Password?</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.primaryButton, loading && styles.buttonDisabled]}
+            <TouchableOpacity 
+              style={[styles.loginBtn, loading && styles.disabledBtn]} 
               onPress={handleLogin}
               disabled={loading}
-              activeOpacity={0.8}
             >
               {loading ? (
-                <ActivityIndicator color={COLORS.white} />
+                <ActivityIndicator color="#FFF" />
               ) : (
-                <Text style={styles.buttonText}>Sign In</Text>
+                <Text style={styles.loginBtnText}>Return to Oasis</Text>
               )}
             </TouchableOpacity>
           </View>
 
           <View style={styles.divider}>
             <View style={styles.line} />
-            <Text style={styles.or}>OR</Text>
+            <Text style={styles.orText}>OR CONTINUE WITH</Text>
             <View style={styles.line} />
           </View>
 
-          <View style={styles.socialContainer}>
-            <TouchableOpacity
-              style={styles.socialBtn}
-              onPress={() => handleSocialSignIn('google')}
-              disabled={!!socialLoading || loading}
-            >
-              {socialLoading === 'google' ? (
-                <ActivityIndicator color={COLORS.textPrimary} />
-              ) : (
-                <>
-                  <Ionicons name="logo-google" size={20} color={COLORS.textPrimary} style={{ marginRight: 10 }} />
-                  <Text style={styles.socialText}>Continue with Google</Text>
-                </>
-              )}
+          {/* Social Buttons */}
+          <View style={styles.socialRow}>
+            <TouchableOpacity style={styles.socialBtn} onPress={() => signInWithGoogle()}>
+              <Ionicons name="logo-google" size={20} color="#DB4437" />
+              <Text style={styles.socialBtnText}>Google</Text>
             </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.socialBtn, { borderColor: COLORS.facebookBlue }]}
-              onPress={() => handleSocialSignIn('facebook')}
-              disabled={!!socialLoading || loading}
-            >
-              <Ionicons name="logo-facebook" size={20} color={COLORS.facebookBlue} style={{ marginRight: 10 }} />
-              <Text style={[styles.socialText, { color: COLORS.facebookBlue }]}>Continue with Facebook</Text>
+            <TouchableOpacity style={styles.socialBtn}>
+              <Ionicons name="logo-apple" size={20} color={DEEP_SAGE} />
+              <Text style={styles.socialBtnText}>Apple</Text>
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity
-            style={styles.footer}
-            onPress={() => router.push('/signup')}
-            disabled={loading}
-          >
-            <Text style={styles.footerText}>
-              Don't have an account? <Text style={styles.link}>Sign Up</Text>
-            </Text>
+          <TouchableOpacity style={styles.footer} onPress={() => router.push('/signup')}>
+            <Text style={styles.footerText}>New here? <Text style={styles.signupLink}>Begin Journey</Text></Text>
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -193,65 +148,60 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  scrollContent: { paddingHorizontal: 24, paddingBottom: 40, flexGrow: 1, justifyContent: 'center' },
-  header: { marginBottom: 32 },
-  title: { fontSize: 28, fontWeight: '800', color: COLORS.textPrimary, letterSpacing: -0.5 },
-  subtitle: { fontSize: 16, color: COLORS.textSecondary, marginTop: 4 },
-  form: { width: '100%' },
-  input: {
-    backgroundColor: COLORS.surface,
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    fontSize: 16,
-    color: COLORS.textPrimary,
+  container: { flex: 1, backgroundColor: SAND },
+  scrollContent: { padding: 24, flexGrow: 1, justifyContent: 'center' },
+  
+  header: { alignItems: 'center', marginBottom: 40 },
+  logoMark: { 
+    width: 64, height: 64, borderRadius: 24, 
+    backgroundColor: SAGE, 
+    justifyContent: 'center', alignItems: 'center',
+    shadowColor: SAGE, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 12,
+    elevation: 5
   },
-  passwordContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.surface,
-    borderRadius: 12,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+  title: { fontSize: 32, fontWeight: '300', color: DEEP_SAGE, marginTop: 20, letterSpacing: 0.5 },
+  subtitle: { fontSize: 14, color: '#828282', marginTop: 4, fontStyle: 'italic' },
+
+  formCard: { 
+    backgroundColor: '#FFF', padding: 20, borderRadius: 32, 
+    borderWidth: 1, borderColor: '#F1F5F9',
+    shadowColor: SAGE, shadowOpacity: 0.05, shadowRadius: 15 
   },
-  passwordInput: { flex: 1, padding: 16, fontSize: 16, color: COLORS.textPrimary },
-  eyeIcon: { paddingRight: 16 },
-  forgotPasswordContainer: { alignSelf: 'flex-end', marginBottom: 24 },
-  forgotPasswordText: { color: COLORS.primary, fontWeight: '600', fontSize: 14 },
-  primaryButton: {
-    backgroundColor: COLORS.textPrimary,
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+  inputLabel: { fontSize: 11, fontWeight: '800', color: DEEP_SAGE, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1.2, marginLeft: 4 },
+  inputGroup: { 
+    flexDirection: 'row', alignItems: 'center', 
+    backgroundColor: SAND, paddingHorizontal: 16, 
+    height: 60, borderRadius: 20, marginBottom: 16,
+    borderWidth: 1.5, borderColor: '#F1F5F9'
   },
-  buttonDisabled: { backgroundColor: COLORS.textSecondary, opacity: 0.7 },
-  buttonText: { color: COLORS.white, fontWeight: '700', fontSize: 16 },
-  divider: { flexDirection: 'row', alignItems: 'center', marginVertical: 32 },
-  line: { flex: 1, height: 1, backgroundColor: COLORS.border },
-  or: { marginHorizontal: 16, color: '#AAA', fontWeight: '600', fontSize: 12 },
-  socialContainer: { gap: 12 },
-  socialBtn: {
-    flexDirection: 'row',
-    padding: 14,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.white,
+  inputFocused: { borderColor: SAGE, backgroundColor: '#FFF' },
+  input: { flex: 1, marginLeft: 12, fontSize: 16, color: DEEP_SAGE, fontWeight: '500' },
+  
+  forgotBtn: { alignSelf: 'flex-end', marginBottom: 20 },
+  forgotText: { color: SAGE, fontWeight: '700', fontSize: 13 },
+
+  loginBtn: { 
+    backgroundColor: SAGE, height: 64, borderRadius: 32, 
+    justifyContent: 'center', alignItems: 'center',
+    shadowColor: SAGE, shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.25, shadowRadius: 15,
+    elevation: 4
   },
-  socialText: { color: COLORS.textPrimary, fontWeight: '600', fontSize: 15 },
-  footer: { marginTop: 40, alignItems: 'center' },
-  footerText: { color: COLORS.textSecondary, fontSize: 15 },
-  link: { color: COLORS.primary, fontWeight: '700' },
+  disabledBtn: { opacity: 0.6 },
+  loginBtnText: { color: '#FFF', fontSize: 16, fontWeight: '700', letterSpacing: 1 },
+
+  divider: { flexDirection: 'row', alignItems: 'center', marginVertical: 30 },
+  line: { flex: 1, height: 1, backgroundColor: '#E2E8F0' },
+  orText: { marginHorizontal: 15, color: '#94A3B8', fontWeight: '800', fontSize: 10, letterSpacing: 1.5 },
+
+  socialRow: { flexDirection: 'row', gap: 12 },
+  socialBtn: { 
+    flex: 1, flexDirection: 'row', height: 56, borderRadius: 20, 
+    borderWidth: 1, borderColor: '#E2E8F0', backgroundColor: '#FFF',
+    justifyContent: 'center', alignItems: 'center', gap: 8 
+  },
+  socialBtnText: { fontWeight: '700', color: DEEP_SAGE },
+
+  footer: { marginTop: 30, alignItems: 'center' },
+  footerText: { color: '#94A3B8', fontWeight: '600' },
+  signupLink: { color: SAGE, fontWeight: '800' }
 });

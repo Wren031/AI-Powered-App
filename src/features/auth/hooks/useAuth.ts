@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import { useState } from "react";
 import { Alert } from "react-native";
 import { supabase } from "../../lib/supabase";
@@ -37,7 +38,6 @@ const signInWithGoogle = async () => {
       Alert.alert("Google Error", error.message);
       return null;
     } finally {
-      // We set false, though Web usually redirects the page anyway
       setLoading(false); 
     }
   };
@@ -83,24 +83,27 @@ const signInWithGoogle = async () => {
   };
 
   const logout = async () => {
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-    } catch (error: any) {
-      Alert.alert("Error", error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+      setLoading(true);
+      try {
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error;
+
+        router.replace("/"); 
+        
+      } catch (error: any) {
+        Alert.alert("Logout Failed", error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
 
   return {
     verifyEmail,
     login,
     signUp,
     logout,
-    signInWithGoogle, // Added this
+    signInWithGoogle,
     loading,
-    setLoading,       // Added this so your Screen component can use it
+    setLoading,     
   };
 };
